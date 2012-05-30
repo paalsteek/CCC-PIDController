@@ -16406,7 +16406,7 @@ http://www.ee.siue.edu/~alozows/library/datasheets/BFR96.pdf</description>
 <part name="JP3" library="pinhead" deviceset="PINHD-1X8" device=""/>
 <part name="R2" library="resistor" deviceset="R-EU_" device="R0805" value="220"/>
 <part name="C6" library="resistor" deviceset="C-EU" device="C0805K" value="47nF"/>
-<part name="LED1" library="led" deviceset="LED" device="SML0805"/>
+<part name="POWER" library="led" deviceset="LED" device="SML0805"/>
 <part name="C8" library="resistor" deviceset="CPOL-EU" device="150CLZ-0810" value="470uF"/>
 <part name="GND8" library="supply1" deviceset="GND" device=""/>
 <part name="P+8" library="supply1" deviceset="VCC" device=""/>
@@ -16473,7 +16473,7 @@ http://www.ee.siue.edu/~alozows/library/datasheets/BFR96.pdf</description>
 <instance part="JP3" gate="A" x="322.58" y="58.42"/>
 <instance part="R2" gate="G$1" x="41.91" y="205.74" rot="R90"/>
 <instance part="C6" gate="G$1" x="55.88" y="220.98" rot="R270"/>
-<instance part="LED1" gate="G$1" x="41.91" y="222.25"/>
+<instance part="POWER" gate="G$1" x="41.91" y="222.25"/>
 <instance part="C8" gate="G$1" x="53.34" y="205.74" rot="R90"/>
 <instance part="GND8" gate="1" x="58.42" y="181.61"/>
 <instance part="P+8" gate="VCC" x="41.91" y="233.68"/>
@@ -16607,7 +16607,7 @@ http://www.ee.siue.edu/~alozows/library/datasheets/BFR96.pdf</description>
 <pinref part="P+7" gate="VCC" pin="VCC"/>
 </segment>
 <segment>
-<pinref part="LED1" gate="G$1" pin="A"/>
+<pinref part="POWER" gate="G$1" pin="A"/>
 <pinref part="P+8" gate="VCC" pin="VCC"/>
 <wire x1="41.91" y1="224.79" x2="41.91" y2="228.6" width="0.1524" layer="91"/>
 <wire x1="41.91" y1="231.14" x2="41.91" y2="228.6" width="0.1524" layer="91"/>
@@ -17073,7 +17073,7 @@ http://www.ee.siue.edu/~alozows/library/datasheets/BFR96.pdf</description>
 <net name="N$13" class="0">
 <segment>
 <pinref part="R2" gate="G$1" pin="2"/>
-<pinref part="LED1" gate="G$1" pin="C"/>
+<pinref part="POWER" gate="G$1" pin="C"/>
 <wire x1="41.91" y1="210.82" x2="41.91" y2="217.17" width="0.1524" layer="91"/>
 </segment>
 </net>
