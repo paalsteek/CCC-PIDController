@@ -43,10 +43,6 @@
 		#include <avr/interrupt.h>
 		#include <string.h>
 
-		#include "Descriptors.h"
-
-		#include <LUFA/Drivers/USB/USB.h>
-
 	/* Function Prototypes: */
 		void SetupHardware(void);
 		void CDC_Task(void);

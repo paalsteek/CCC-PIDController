@@ -29,10 +29,10 @@
 #define BAUD 9600
 
 // Onewire Bus location
-#define OW_INPUT PIND
-#define OW_PORT PORTD
-#define OW_DDR DDRD
-#define OW_PIN PD7
+#define OW_INPUT PINC
+#define OW_PORT PORTC
+#define OW_DDR DDRC
+#define OW_PIN PC7
 
 // Heater SSR location
 #define HEATER_PORT PORTB

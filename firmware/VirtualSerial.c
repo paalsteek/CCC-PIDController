@@ -36,6 +36,11 @@
 
 #include "VirtualSerial.h"
 #include "stdlib.h"
+#include "serial.h"
+
+#include "tempsensors.h"
+#include "onewire.h"
+#include "config.h"
 
 /** Contains the current baud rate and other settings of the virtual serial port. While this demo does not use
  *  the physical USART and thus does not use these settings, they must still be retained and returned to the host
@@ -79,6 +84,15 @@ void SetupHardware(void)
 
 	/* Hardware Initialization */
 	USB_Init();
+
+	ow_set_bus(&OW_INPUT,&OW_PORT,&OW_DDR,OW_PIN);
+
+	initTempSensors();
+
+	// Setup hardware timer
+	TCCR1B |= ( 1 << CS12 ) | ( 1 << CS10 );
+	OCR1A = 0x3D09;
+	TIMSK1 |= ( 1 << OCIE1A ) | ( 1 << TOIE1 );
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs and
@@ -158,30 +172,26 @@ void EVENT_USB_Device_ControlRequest(void)
 	}
 }
 
-void Write_Data(char* data, uint16_t bytes)
+ISR(TIMER1_COMPA_vect)
 {
-		/* Select the Serial Tx Endpoint */
-		Endpoint_SelectEndpoint(CDC_TX_EPADDR);
+	uint8_t tmp_sreg;
 
-		/* Write the String to the Endpoint */
-		Endpoint_Write_Stream_LE(data, bytes, NULL);
+	tmp_sreg = SREG;
+	cli();
 
-		/* Remember if the packet to send completely fills the endpoint */
-		bool IsFull = (Endpoint_BytesInEndpoint() == CDC_TXRX_EPSIZE);
+	loopTempSensors();
+	//loopPIDController();
+	int32_t temp = getHighResTemperature();
+	SerialPutLongInt(temp);
+	SerialPutString(NEWLINESTR);
+	TCNT1 = 0;
 
-		/* Finalize the stream transfer to send the last packet */
-		Endpoint_ClearIN();
+	SREG = tmp_sreg;
+}
 
-		/* If the last packet filled the endpoint, send an empty packet to release the buffer on
-		 * the receiver (otherwise all data will be cached until a non-full packet is received) */
-		if (IsFull)
-		{
-			/* Wait until the endpoint is ready for another packet */
-			Endpoint_WaitUntilReady();
-
-			/* Send an empty packet to ensure that the host does not buffer data sent to it */
-			Endpoint_ClearIN();
-		}
+ISR(TIMER1_OVF_vect)
+{
+	SerialPutString("overflow" NEWLINESTR);
 }
 
 void Menu_Task(char* input, uint16_t count)
@@ -191,15 +201,27 @@ void Menu_Task(char* input, uint16_t count)
 		switch ( *(input + i) )
 		{
 			case 'r':
+				cli();
 				USB_Disable();
 				_delay_ms(1000);
 				__asm("jmp 0x3800");
 				break;
+			case 'i':
+				initTempSensors();
+				break;
+			case 'l':
+				loopTempSensors();
+				int32_t temp = getHighResTemperature();
+				SerialPutLongInt(temp);
+				SerialPutString(NEWLINESTR);
+				break;
 			case 'h':
 			default:
-				Write_Data("Usage:\n\r", 8);
-				Write_Data("  h: This message\n\r", 19);
-				Write_Data("  r: Reboot into Bootloader mode\n\r", 34);
+				SerialPutString("Usage:\n\r");
+				SerialPutString("  h: This message\n\r");
+				SerialPutString("  r: Reboot into Bootloader mode\n\r");
+				SerialPutString("  i: Initialize components\n\r");
+				SerialPutString("  l: Loop tempsensors\n\r");
 				break;
 		}
 	}
