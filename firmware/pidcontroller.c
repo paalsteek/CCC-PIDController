@@ -25,9 +25,10 @@
 
 #include "pidcontroller.h"
 #include "config.h"
-#include "uart.h"
+//#include "uart.h"
 #include "tempsensors.h"
-#include "uart_addon.h"
+//#include "uart_addon.h"
+#include "serial.h"
 
 #define FALSE (0!=0)
 #define TRUE  (0==0)
@@ -89,7 +90,7 @@ void setPID_D(float new) {
 }
 
 void savePIDConfig(void) {
-  uart_puts_P("Writing PID controller configuration to EEPROM." NEWLINESTR);
+  SerialPutString("Writing PID controller configuration to EEPROM." NEWLINESTR);
   ee_save();
 }
 
@@ -129,30 +130,30 @@ void loopPIDController(void) {
 
   // eventually, print debug line.
   if (debug) {
-    uart_puts_P(" PID: ");
-    uart_put_float(_pid_value);
-    uart_puts_P(", p: ");
-    uart_put_float(_p_term);
-    uart_puts_P(", i: ");
-    uart_put_float(_i_term);
-    uart_puts_P(", d: ");
-    uart_put_float(_d_term);
-    uart_puts_P(", iS: ");
-    uart_put_float(_iState);
-    uart_puts_P(", l: ");
-    uart_put_float(_last_temp);
-    uart_puts_P(NEWLINESTR);
+    SerialPutString(" PID: ");
+    SerialPutFloat(_pid_value);
+    SerialPutString(", p: ");
+    SerialPutFloat(_p_term);
+    SerialPutString(", i: ");
+    SerialPutFloat(_i_term);
+    SerialPutString(", d: ");
+    SerialPutFloat(_d_term);
+    SerialPutString(", iS: ");
+    SerialPutFloat(_iState);
+    SerialPutString(", l: ");
+    SerialPutFloat(_last_temp);
+    SerialPutString(NEWLINESTR);
   }
 }
 
 void autotunePID(void) {
-  uart_puts_P("Autotuning PID controller." NEWLINESTR);
+  SerialPutString("Autotuning PID controller." NEWLINESTR);
 }
 
 
 
 void restorePIDDefault(void) {
-  uart_puts_P("Writing PID controller default configuration to EEPROM." NEWLINESTR);
+  SerialPutString("Writing PID controller default configuration to EEPROM." NEWLINESTR);
   _pid_data.setpoint=DEFAULT_SETPOINT;
   _pid_data.p_gain=DEFAULT_P_GAIN;
   _pid_data.i_gain=DEFAULT_I_GAIN;

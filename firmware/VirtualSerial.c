@@ -41,6 +41,7 @@
 #include "tempsensors.h"
 #include "onewire.h"
 #include "config.h"
+#include "pidcontroller.h"
 
 /** Contains the current baud rate and other settings of the virtual serial port. While this demo does not use
  *  the physical USART and thus does not use these settings, they must still be retained and returned to the host
@@ -88,6 +89,7 @@ void SetupHardware(void)
 	ow_set_bus(&OW_INPUT,&OW_PORT,&OW_DDR,OW_PIN);
 
 	initTempSensors();
+	initPIDController();
 
 	// Setup hardware timer
 	TCCR1B |= ( 1 << CS12 ) | ( 1 << CS10 );
@@ -180,9 +182,12 @@ ISR(TIMER1_COMPA_vect)
 	cli();
 
 	loopTempSensors();
-	//loopPIDController();
+	loopPIDController();
 	int32_t temp = getHighResTemperature();
+	int16_t duty = get_duty_cycle();
 	SerialPutLongInt(temp);
+	SerialPutString(", ");
+	SerialPutInt(duty);
 	SerialPutString(NEWLINESTR);
 	TCNT1 = 0;
 
@@ -212,8 +217,19 @@ void Menu_Task(char* input, uint16_t count)
 			case 'l':
 				loopTempSensors();
 				int32_t temp = getHighResTemperature();
+				SerialPutString("Temperature: ");
 				SerialPutLongInt(temp);
 				SerialPutString(NEWLINESTR);
+				loopPIDController();
+				int16_t duty = get_duty_cycle();
+				SerialPutString("Duty cycle: ");
+				SerialPutInt(duty);
+				SerialPutString(NEWLINESTR);
+				break;
+			case 'd':
+				restorePIDDefault();
+			case 'p':
+				initPIDController();
 				break;
 			case 'h':
 			default:
@@ -221,7 +237,9 @@ void Menu_Task(char* input, uint16_t count)
 				SerialPutString("  h: This message\n\r");
 				SerialPutString("  r: Reboot into Bootloader mode\n\r");
 				SerialPutString("  i: Initialize components\n\r");
-				SerialPutString("  l: Loop tempsensors\n\r");
+				SerialPutString("  l: Loop tempsensors and PID\n\r");
+				SerialPutString("  d: Restore default values for PID\n\r");
+				SerialPutString("  p: Initialize PIDController\n\r");
 				break;
 		}
 	}

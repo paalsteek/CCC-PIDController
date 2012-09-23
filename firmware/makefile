@@ -18,7 +18,15 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = VirtualSerial
-SRC          = $(TARGET).c Descriptors.c serial.c tempsensors.c onewire.c ds18x20.c crc8.c $(LUFA_SRC_USB)
+SRC          = $(TARGET).c \
+               Descriptors.c \
+							 serial.c \
+							 tempsensors.c \
+							 onewire.c \
+							 ds18x20.c \
+							 crc8.c \
+							 pidcontroller.c \
+							 $(LUFA_SRC_USB)
 LUFA_PATH    = LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =

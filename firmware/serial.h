@@ -15,6 +15,7 @@ void SerialPutString(char* data);
 
 void SerialPutInt(int i);
 void SerialPutLongInt(long int i);
+void SerialPutFloat(float f);
 
 void SerialPutHexByte(char byte);
 

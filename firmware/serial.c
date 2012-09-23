@@ -48,3 +48,10 @@ void SerialPutHexByte(char byte)
 	itoa(byte, buf, 16);
 	SerialPutString(buf);
 }
+
+void SerialPutFloat(float f)
+{
+	char buf[10];
+	dtostrf(f, 3, 5, buf);
+	SerialPutString(buf);
+}
