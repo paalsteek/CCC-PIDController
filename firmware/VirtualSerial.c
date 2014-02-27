@@ -42,6 +42,7 @@
 #include "onewire.h"
 #include "config.h"
 #include "pidcontroller.h"
+#include "heater.h"
 
 /** Contains the current baud rate and other settings of the virtual serial port. While this demo does not use
  *  the physical USART and thus does not use these settings, they must still be retained and returned to the host
@@ -56,6 +57,55 @@ static CDC_LineEncoding_t LineEncoding = { .BaudRateBPS = 0,
                                            .ParityType  = CDC_PARITY_None,
                                            .DataBits    = 8                            };
 
+void Menu_Task()
+{
+	char buf[10];
+
+	uint8_t ret = SerialReadLine(buf, 10);
+	if ( ret > 0 )
+	{
+		switch ( buf[0] )
+		{
+			case 'b':
+				cli();
+				USB_Disable();
+				_delay_ms(1000);
+				__asm("jmp 0x3800");
+				break;
+			case 'd':
+			case 'D':
+			case 'i':
+			case 'I':
+			case 'p':
+			case 'P':
+			case 'S':
+			case 't':
+			case 'T':
+				SerialPutString("This funktion is not implemented yet." NEWLINESTR );
+				break;
+			case 's':
+				savePIDConfig();
+				break;
+			case 'r':
+				restorePIDDefault();
+				break;
+			case 'h':
+			default:
+				SerialPutString("C8H10N4O2 menu" NEWLINESTR );
+				SerialPutString(" h: print this message" NEWLINESTR);
+				SerialPutString(" b: enter Bootloader mode" NEWLINESTR);
+				SerialPutString(" S: print current settings" NEWLINESTR );
+				SerialPutString("-----" NEWLINESTR );
+				SerialPutString(" p/P: increase/decrease p gain" NEWLINESTR );
+				SerialPutString(" i/I: increase/decrease i gain" NEWLINESTR );
+				SerialPutString(" d/D: increase/decrease d gain" NEWLINESTR );
+				SerialPutString(" t/T: increase/decrease setpoint" NEWLINESTR );
+				SerialPutString(" r: reset PID configuration to default values" NEWLINESTR );
+				SerialPutString(" s: save PID configuration to EEPROM" NEWLINESTR );
+				break;
+		}
+	}
+}
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
@@ -68,8 +118,7 @@ int main(void)
 
 	for (;;)
 	{
-		CDC_Task();
-		USB_USBTask();
+		Menu_Task();
 	}
 }
 
@@ -90,6 +139,7 @@ void SetupHardware(void)
 
 	initTempSensors();
 	initPIDController();
+	initHeater();
 
 	// Setup hardware timer
 	TCCR1B |= ( 1 << CS12 ) | ( 1 << CS10 );
@@ -183,6 +233,7 @@ ISR(TIMER1_COMPA_vect)
 
 	loopTempSensors();
 	loopPIDController();
+	updateHeater();
 	int32_t temp = getHighResTemperature();
 	int16_t duty = get_duty_cycle();
 	SerialPutLongInt(temp);
@@ -199,52 +250,7 @@ ISR(TIMER1_OVF_vect)
 	SerialPutString("overflow" NEWLINESTR);
 }
 
-void Menu_Task(char* input, uint16_t count)
-{
-	for ( uint16_t i = 0; i < count; i++ )
-	{
-		switch ( *(input + i) )
-		{
-			case 'r':
-				cli();
-				USB_Disable();
-				_delay_ms(1000);
-				__asm("jmp 0x3800");
-				break;
-			case 'i':
-				initTempSensors();
-				break;
-			case 'l':
-				loopTempSensors();
-				int32_t temp = getHighResTemperature();
-				SerialPutString("Temperature: ");
-				SerialPutLongInt(temp);
-				SerialPutString(NEWLINESTR);
-				loopPIDController();
-				int16_t duty = get_duty_cycle();
-				SerialPutString("Duty cycle: ");
-				SerialPutInt(duty);
-				SerialPutString(NEWLINESTR);
-				break;
-			case 'd':
-				restorePIDDefault();
-			case 'p':
-				initPIDController();
-				break;
-			case 'h':
-			default:
-				SerialPutString("Usage:\n\r");
-				SerialPutString("  h: This message\n\r");
-				SerialPutString("  r: Reboot into Bootloader mode\n\r");
-				SerialPutString("  i: Initialize components\n\r");
-				SerialPutString("  l: Loop tempsensors and PID\n\r");
-				SerialPutString("  d: Restore default values for PID\n\r");
-				SerialPutString("  p: Initialize PIDController\n\r");
-				break;
-		}
-	}
-}
-
+#if 0
 /** Function to manage CDC data transmission and reception to and from the host. */
 void CDC_Task(void)
 {
@@ -274,4 +280,4 @@ void CDC_Task(void)
 		ReportString = NULL;
 	}
 }
-
+#endif

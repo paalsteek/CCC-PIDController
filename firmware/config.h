@@ -35,9 +35,9 @@
 #define OW_PIN PC7
 
 // Heater SSR location
-#define HEATER_PORT PORTB
-#define HEATER_DDR DDRB
-#define HEATER_PIN PB1
+#define HEATER_PORT PORTC
+#define HEATER_DDR DDRC
+#define HEATER_PIN PC6
 
 // Status LED location
 #define STATUSLED_PORT PORTD

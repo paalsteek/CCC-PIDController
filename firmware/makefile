@@ -26,6 +26,7 @@ SRC          = $(TARGET).c \
 							 ds18x20.c \
 							 crc8.c \
 							 pidcontroller.c \
+							 heater.c \
 							 $(LUFA_SRC_USB)
 LUFA_PATH    = LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
@@ -46,7 +47,7 @@ include $(LUFA_PATH)/Build/lufa_avrdude.mk
 include $(LUFA_PATH)/Build/lufa_atprogram.mk
 
 reboot: $(TARGET).elf
-	@echo 'r' > /dev/ttyACM0
+	@echo 'b' > /dev/ttyACM0
 	@sleep 2
 
 .PHONY: reboot

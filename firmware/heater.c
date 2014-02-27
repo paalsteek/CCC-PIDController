@@ -23,13 +23,16 @@
 
 #include "heater.h"
 #include "config.h"
-#include "timer.h"
-#include "uart.h"
-#include "uart_addon.h"
+//#include "timer.h"
+//#include "uart.h"
+//#include "uart_addon.h"
+#include "serial.h"
 #include "pidcontroller.h"
 
 #define FALSE (0!=0) // FALSE
 #define TRUE  (0==0) // TRUE
+
+#define TIMER_FACTOR 0x3D09
 
 uint32_t _toggle_time;
 // Start with heater switched off.
@@ -40,8 +43,21 @@ uint32_t _off_cycle=1000;
 void heater_on(void);
 void heater_off(void);
 
+ISR(TIMER1_COMPB_vect)
+{
+	uint8_t tmp_sreg;
+
+	tmp_sreg = SREG;
+	cli();
+
+	heater_off();
+
+	SREG = tmp_sreg;
+}
+
 void initHeater(void) {
-  _toggle_time = TimerRead();
+  //_toggle_time = TimerRead();
+	TIMSK1 |= (1 << OCIE1B);
   HEATER_DDR |= (1 << HEATER_PIN);
   heater_off();
 }
@@ -50,12 +66,17 @@ void initHeater(void) {
 // a full cycle is always 1000ms. The heating occurs always in the first
 // phase, the heater is then switched of for the second phase of the cycle.
 void updateHeater(void) {
-  if (get_duty_cycle() > 0) {
-	_on_cycle=TimerRead();
-	_off_cycle=_on_cycle + get_duty_cycle();
+	//SerialPutString("heater: ");
+	int16_t duty = get_duty_cycle();
+	//SerialPutInt(duty);
+  if (duty > 0) {
+		uint16_t cycle = TIMER_FACTOR / 1000;
+		//SerialPutInt(cycle);
+		OCR1B = cycle * duty;
+		heater_on();
   } else {
-	_on_cycle=TimerRead();
-	_off_cycle=_on_cycle; 
+	//_on_cycle=TimerRead();
+	//_off_cycle=_on_cycle; 
   }
   /*uart_puts_P("UPDATE: timer: ");
   uart_put_longint(TimerRead());
@@ -64,16 +85,17 @@ void updateHeater(void) {
   uart_puts_P(" off: ");
   uart_put_longint(_off_cycle);
   uart_puts_P(NEWLINESTR);*/
+	//SerialPutString(NEWLINESTR);
 }
 
 // TODO: Consider moving this to an interrupt-based routine.
 void loopHeater(void) {
-  uint32_t time=TimerRead();
+  /*uint32_t time=TimerRead();
   if (time > _on_cycle && time < _off_cycle) {
 	  heater_on();
   } else {
 	heater_off();
-  }
+  }*/
 }
 
 // the heater SSR is connected via a Transistor ("Basisschaltung"). Invert the signal.
